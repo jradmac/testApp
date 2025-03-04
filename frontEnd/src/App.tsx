@@ -1,51 +1,75 @@
+import React, {useState, useEffect, JSX} from 'react';
 import './App.css'
 
-const bandName = [
-  {name: 'Dire Straits', members: 'Mark', formed: 1977},
-  {name: 'REM', members: 'Michael', formed: 1980},
-  {name: 'Collective Soul', members: 'Ed Roland', formed: 1992}]
 
-function Welcome() {
-  return <h1>Criminally underatted bands</h1>
+
+interface Team {
+    tid: number;
+    cid: number;
+    did: number;
+    school: string;
+    name: string;  // This is probably  "mascot"
+    abbrev: string;
+    pop: number;
+    city: string;
+    state: string;
+    latitude: number;
+    longitude: number;
+  }
+
+
+function Header(): JSX.Element {
+  return <h1>College Basketball teams</h1>
+}
+
+function TeamCard(props: {team: Team}): JSX.Element {
+  return (
+    <div className="team-card">
+      <h2>{props.team.school}</h2>
+      <p>Mascot: {props.team.name}</p>
+      <p>Location: {props.team.city}, {props.team.state}</p>
+    </div>
+  )
+}
+
+function TeamList(props: {teams: Team[]}): JSX.Element {
+  return (
+    <div className="team-list">
+      {props.teams.map((team, index) => <TeamCard key={index} team={team} />)}
+    </div>
+  )
+}
+
+async function fetchTeamData() {
+  try {
+    const response = await fetch('/CollegeBasketballTeams.json');
+    return await response.json();
+  } catch (error) {
+    console.error("Fetch error:", error);
+    return [];
+  }
 }
 
 
-function BandList() {
+function App(): JSX.Element {
+  const [teams, setTeams] = useState<Team[]>([])
+
+  useEffect(() => {
+    fetchTeamData().then(data => setTeams(data));
+  }, []);
+
   return (
-    <>  
-    {
-      bandName.map((band) => {
-        return (
-          <Band {...band} />
-        )
-      })
-    }
-    
-    </>
+    <div className="App">
+      <Header />
+      {teams.length > 0 ? (
+        <TeamList teams={teams} />
+      ) : (
+        <p>No teams to display. Check console for details.</p>
+      )}
+    </div>
   )
 }
 
 
-function Band ({name, members, formed}: {name: string, members: string, formed: number}) {
-  return (
-    <>
-      <img />
-      <h2>{name}</h2>
-      <h3>Original Members: {members} </h3>
-      <h3>Formed: {formed} </h3>
-    </>
-  )
-}
-
-
-function App() {
-
-  return (
-    <>
-    <Welcome />
-    <BandList />
-    </>
-  )
-}
 
 export default App
