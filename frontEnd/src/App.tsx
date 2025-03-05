@@ -42,8 +42,46 @@ function TeamList(props: {teams: Team[]}): JSX.Element {
 
 async function fetchTeamData() {
   try {
+    console.log("Starting fetch...");
     const response = await fetch('/CollegeBasketballTeams.json');
-    return await response.json();
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log("Data received:", data);
+    
+    // If data is an object with a property that contains the teams array
+    // We need to figure out which property contains the teams
+    if (!Array.isArray(data)) {
+      // Log the first property value to see what it contains
+      const firstKey = Object.keys(data)[0];
+      console.log("First key:", firstKey);
+      console.log("Value type:", typeof data[firstKey]);
+      console.log("Is value an array?", Array.isArray(data[firstKey]));
+      
+      // If the first property contains an array, use that
+      if (Array.isArray(data[firstKey])) {
+        return data[firstKey];
+      }
+      
+      // If the object itself has team properties, wrap it in an array
+      if (data.school) {
+        return [data];
+      }
+      
+      // Try to extract an array from somewhere in the object
+      for (const key in data) {
+        if (Array.isArray(data[key])) {
+          console.log("Found array in property:", key);
+          return data[key];
+        }
+      }
+    }
+    
+    // If data is already an array, just return it
+    return Array.isArray(data) ? data : [];
   } catch (error) {
     console.error("Fetch error:", error);
     return [];
